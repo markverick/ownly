@@ -16,6 +16,7 @@ export class SvsProvider {
   private readonly docs = new Map<string, Y.Doc>();
   private readonly bundlers = new Map<string, Bundler>;
   private readonly aware = new Map<string, awareProto.Awareness>();
+  private readonly awarePending = new Map<string, Promise<awareProto.Awareness>>();
 
   private readonly persistDirty = new Set<string>();
   private lastCompaction = 0;
@@ -167,6 +168,7 @@ export class SvsProvider {
       this.docs.delete(uuid);
       this.bundlers.delete(uuid);
       this.aware.delete(uuid);
+      this.awarePending.delete(uuid);
     });
 
     return doc;
@@ -230,8 +232,22 @@ export class SvsProvider {
     let aware = this.aware.get(uuid);
     if (aware) return aware;
 
-    aware = await NdnAwareness.create(this.wksp, this.svs, uuid, doc);
-    this.aware.set(doc.guid, aware);
+    const pending = this.awarePending.get(uuid);
+    if (pending) return await pending;
+
+    const createPromise = NdnAwareness.create(this.wksp, this.svs, uuid, doc)
+      .then((newAware) => {
+        this.aware.set(uuid, newAware);
+        this.awarePending.delete(uuid);
+        return newAware;
+      })
+      .catch((err) => {
+        this.awarePending.delete(uuid);
+        throw err;
+      });
+
+    this.awarePending.set(uuid, createPromise);
+    aware = await createPromise;
 
     return aware;
   }
@@ -283,8 +299,12 @@ export class SvsProvider {
    * Checks if the document needs compaction.
    */
   private async persist(updates: { uuid: string; update: Uint8Array }[]) {
-    const utime = utils.monotonicEpoch();
-    const id = await this.db.updatePutAll(updates.map((update) => ({ ...update, utime })));
+    const id = await this.db.updatePutAll(
+      updates.map((update) => ({
+        ...update,
+        utime: utils.monotonicEpoch(),
+      })),
+    );
 
     // Mark the document as dirty
     for (const { uuid } of updates) {
