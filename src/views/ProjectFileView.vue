@@ -1,6 +1,6 @@
 <template>
   <div class="outer">
-    <div class="file-head px-3 pt-3 pb-2">
+    <div class="file-head px-3 py-1">
       <div class="file-head-left"></div>
 
       <div class="file-head-center">
@@ -640,7 +640,7 @@ watch(awareness, (newAwareness, oldAwareness) => {
   &:hover .viewer-tooltip,
   &:focus .viewer-tooltip {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translate(0, 0);
     pointer-events: auto;
   }
 }
@@ -663,7 +663,7 @@ watch(awareness, (newAwareness, oldAwareness) => {
   &:hover .viewer-tooltip,
   &:focus .viewer-tooltip {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translate(0, 0);
     pointer-events: auto;
   }
 }
@@ -671,15 +671,16 @@ watch(awareness, (newAwareness, oldAwareness) => {
 .viewer-tooltip {
   position: absolute;
   top: calc(100% + 8px);
-  left: 50%;
-  transform: translate(-50%, -4px);
+  right: 0;
+  left: auto;
+  transform: translate(0, -4px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.12s ease, transform 0.12s ease;
   z-index: 4;
 
   min-width: 140px;
-  max-width: 220px;
+  max-width: min(220px, calc(100vw - 16px));
   padding: 8px 10px;
   border-radius: 8px;
   background: var(--bulma-scheme-main-bis);
