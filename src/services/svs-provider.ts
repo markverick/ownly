@@ -231,7 +231,7 @@ export class SvsProvider {
     if (aware) return aware;
 
     aware = await NdnAwareness.create(this.wksp, this.svs, uuid, doc);
-    this.aware.set(uuid, aware);
+    this.aware.set(doc.guid, aware);
 
     return aware;
   }
@@ -283,12 +283,8 @@ export class SvsProvider {
    * Checks if the document needs compaction.
    */
   private async persist(updates: { uuid: string; update: Uint8Array }[]) {
-    const id = await this.db.updatePutAll(
-      updates.map((update) => ({
-        ...update,
-        utime: utils.monotonicEpoch(),
-      })),
-    );
+    const utime = utils.monotonicEpoch();
+    const id = await this.db.updatePutAll(updates.map((update) => ({ ...update, utime })));
 
     // Mark the document as dirty
     for (const { uuid } of updates) {
