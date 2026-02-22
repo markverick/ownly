@@ -154,8 +154,8 @@ import {
   computed,
   defineAsyncComponent,
   nextTick,
-  onUnmounted,
   onMounted,
+  onUnmounted,
   ref,
   shallowRef,
   useTemplateRef,
@@ -253,14 +253,14 @@ const renameValue = ref('');
 const renameInput = ref<HTMLInputElement | null>(null);
 
 let awarenessListener: ((event: { added: number[]; updated: number[]; removed: number[] }, source: 'local' | 'remote') => void) | null = null;
-
 onMounted(create);
 watch(filename, create);
 watch(() => route.params.project, create);
+
 watch(filename, () => {
   isRenaming.value = false;
 });
-onUnmounted(destroy);
+onUnmounted(() => void destroy());
 
 const savedSplit = Number(globalThis.localStorage?.getItem(SPLIT_RATIO_KEY));
 if (Number.isFinite(savedSplit)) {
@@ -284,6 +284,7 @@ async function create() {
 
     const wksp = await Workspace.setupOrRedir(router);
     if (!wksp) throw new Error('Workspace not found');
+
     localViewerName.value = wksp.username ?? '';
 
     let newProj;
