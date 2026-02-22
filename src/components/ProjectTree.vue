@@ -541,16 +541,16 @@ async function executeRename(name: string) {
       &::after {
         content: '';
         position: absolute;
-        left: var(--tree-connector-x);
+        left: calc(var(--tree-connector-x) + 1px);
         top: calc(var(--tree-row-height) / 2);
-        width: var(--tree-line-right-gap);
+        width: calc(var(--tree-line-right-gap) - 1px);
         height: 1px;
         background: var(--tree-guide);
         pointer-events: none;
       }
 
       &:last-child::before {
-        bottom: calc(100% - (var(--tree-row-height) / 2));
+        bottom: calc(100% - (var(--tree-row-height) / 2) - 1px);
       }
     }
   }
@@ -569,7 +569,7 @@ async function executeRename(name: string) {
   min-height: var(--tree-row-height);
   border-radius: 6px;
   box-sizing: border-box;
-  margin: 1px 0;
+  margin: 0;
   padding-right: calc(var(--tree-action-size) + 8px);
   color: var(--bulma-white-on-scheme);
 
@@ -620,7 +620,7 @@ async function executeRename(name: string) {
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-left: 2px;
+  margin-left: 3px;
   border: 0;
   background: transparent;
   color: var(--bulma-white-on-scheme) !important;
