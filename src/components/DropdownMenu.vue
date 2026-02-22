@@ -21,11 +21,29 @@ defineExpose({ open });
 const coords = ref({ x: 0, y: 0 });
 const opened = ref(false);
 
-function open(event: MouseEvent) {
-  event.stopPropagation();
-  event.preventDefault();
-  const x = Math.max(event.clientX, 200);
-  const y = event.clientY + 5;
+function open(anchor: MouseEvent | HTMLElement) {
+  let x = 200;
+  let y = 0;
+
+  if (anchor instanceof MouseEvent) {
+    anchor.stopPropagation();
+    anchor.preventDefault();
+
+    const el = (anchor.currentTarget as HTMLElement | null) ?? null;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      x = rect.right + 6;
+      y = rect.top;
+    } else {
+      x = Math.max(anchor.clientX + 6, 200);
+      y = anchor.clientY;
+    }
+  } else {
+    const rect = anchor.getBoundingClientRect();
+    x = rect.right + 6;
+    y = rect.top;
+  }
+
   coords.value = { x, y };
   opened.value = true;
 }
@@ -51,7 +69,7 @@ function close() {
 
   .dropdown-content {
     user-select: none;
-    transform: translateX(calc(-100% + 20px));
+    transform: none;
     box-shadow: 0px 0px 7px 2px rgba(0, 0, 0, 0.5);
   }
 }

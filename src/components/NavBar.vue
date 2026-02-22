@@ -1,5 +1,9 @@
 <template>
-  <aside class="menu main-nav has-background-primary soft-if-dark">
+  <aside
+    ref="navRoot"
+    :class="['menu', 'main-nav', 'has-background-primary', 'soft-if-dark', { resizing: isResizing }]"
+    :style="sidebarStyle"
+  >
     <div class="top-sheet">
       <router-link to="/" v-slot="{ navigate }">
         <img alt="logo" class="logo" src="@/assets/logo-white.svg" @click="navigate" />
@@ -37,11 +41,13 @@
       <template v-if="routeIsWorkspace">
         <p class="menu-label">Projects</p>
         <ul class="menu-list">
-          <li v-for="proj in projects" :key="proj.uuid">
-            <router-link :to="linkProject(proj)">
-              <div class="link-inner">
-                <FontAwesomeIcon class="mr-1" :icon="faLayerGroup" size="sm" />
-                {{ proj.name }}
+          <li v-for="proj in projects" :key="proj.uuid" class="project-item">
+            <router-link :to="linkProject(proj)" class="project-link">
+              <div class="link-inner project-link-inner">
+                <span class="project-icon-shell">
+                  <FontAwesomeIcon :icon="faLayerGroup" size="sm" />
+                </span>
+                <span class="project-name">{{ proj.name }}</span>
               </div>
 
               <ProjectTreeMenu
@@ -57,13 +63,15 @@
               />
             </router-link>
 
-            <ProjectTree
-              v-if="activeProjectName == proj.uuid"
-              class="outermost"
-              ref="projectTree"
-              :project="proj"
-              :files="projectFiles"
-            />
+            <Transition name="project-tree-collapse">
+              <ProjectTree
+                v-if="activeProjectName == proj.uuid"
+                class="outermost"
+                ref="projectTree"
+                :project="proj"
+                :files="projectFiles"
+              />
+            </Transition>
           </li>
 
           <li>
@@ -135,6 +143,8 @@
         </template>
       </div>
     </div>
+
+    <div class="sidebar-resizer" @pointerdown.prevent="startSidebarResize"></div>
 
     <AddChannelModal :show="showChannelModal" @close="showChannelModal = false" />
     <AddProjectModal :show="showProjectModal" @close="showProjectModal = false" />
@@ -227,9 +237,30 @@ const busListeners = {
 
 const showNotifBubble = ref(false);
 
+const SIDEBAR_WIDTH_KEY = 'ownly.sidebar.width';
+const SIDEBAR_DEFAULT_WIDTH = 230;
+const SIDEBAR_MIN_WIDTH = 220;
+const SIDEBAR_MAX_WIDTH = 420;
+
+const navRoot = useTemplateRef<HTMLElement>('navRoot');
+const sidebarWidth = ref(SIDEBAR_DEFAULT_WIDTH);
+const isResizing = ref(false);
+const sidebarLeft = ref(0);
+
+const sidebarStyle = computed(() => ({
+  width: `${sidebarWidth.value}px`,
+  minWidth: `${sidebarWidth.value}px`,
+  flex: `0 0 ${sidebarWidth.value}px`,
+}));
+
 let interval: ReturnType<typeof setInterval> ;
 
 onMounted(async () => {
+  const savedWidth = Number(globalThis.localStorage?.getItem(SIDEBAR_WIDTH_KEY));
+  if (Number.isFinite(savedWidth)) {
+    sidebarWidth.value = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, savedWidth));
+  }
+
   GlobalBus.addListener('project-list', busListeners['project-list']);
   GlobalBus.addListener('project-files', busListeners['project-files']);
   GlobalBus.addListener('chat-channels', busListeners['chat-channels']);
@@ -241,12 +272,48 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  stopSidebarResize();
+
   GlobalBus.removeListener('project-list', busListeners['project-list']);
   GlobalBus.removeListener('project-files', busListeners['project-files']);
   GlobalBus.removeListener('chat-channels', busListeners['chat-channels']);
   GlobalBus.removeListener('conn-change', busListeners['conn-change']);
   clearInterval(interval);
 });
+
+function startSidebarResize(event: PointerEvent) {
+  sidebarLeft.value = navRoot.value?.getBoundingClientRect().left ?? 0;
+  isResizing.value = true;
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
+
+  onSidebarResize(event);
+  window.addEventListener('pointermove', onSidebarResize);
+  window.addEventListener('pointerup', stopSidebarResize, { once: true });
+}
+
+function onSidebarResize(event: PointerEvent) {
+  if (!isResizing.value) return;
+
+  const next = Math.max(
+    SIDEBAR_MIN_WIDTH,
+    Math.min(SIDEBAR_MAX_WIDTH, Math.round(event.clientX - sidebarLeft.value)),
+  );
+  sidebarWidth.value = next;
+}
+
+function stopSidebarResize() {
+  if (!isResizing.value) {
+    window.removeEventListener('pointermove', onSidebarResize);
+    return;
+  }
+
+  isResizing.value = false;
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+  window.removeEventListener('pointermove', onSidebarResize);
+  globalThis.localStorage?.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth.value));
+}
 
 function buildVersion() {
   return __BUILD_VERSION__;
@@ -288,13 +355,14 @@ function setNotification() {
 </script>
 
 <style scoped lang="scss">
-@use '@/components/navbar-item.scss';
+@use '@/assets/navbar-item.scss';
 
 .main-nav {
   width: 230px;
   min-width: 230px;
   height: 100dvh;
   overflow-y: hidden;
+  position: relative;
 
   display: flex;
   flex-direction: column;
@@ -368,14 +436,19 @@ function setNotification() {
       border: none;
       color: rgba(255, 255, 255, 0.6);
       cursor: pointer;
-      padding: 4px 6px;
+      width: 20px;
+      height: 20px;
+      padding: 0;
       border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s ease;
       opacity: 0;
 
       &:hover {
-      background-color: rgba(255, 69, 69, 0.2);
-      color: #ff4545;
+      background-color: rgba(255, 255, 255, 0.14);
+      color: #fff;
       }
     }
 
@@ -383,6 +456,116 @@ function setNotification() {
       opacity: 1;
     }
 
+  }
+
+  :deep(.project-item > a.router-link-active .link-button),
+  :deep(.project-item > a.is-active .link-button) {
+    opacity: 1;
+  }
+
+  :deep(.project-item > a.project-link) {
+    min-height: 30px;
+    border-radius: 6px;
+    border: 0;
+    background-color: transparent;
+  }
+
+  :deep(.project-item > a.project-link:hover) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  :deep(.project-item > a.project-link .project-link-inner) {
+    gap: 7px;
+  }
+
+  :deep(.project-item > a.project-link .project-icon-shell) {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.08);
+    flex: 0 0 auto;
+  }
+
+  :deep(.project-item > a.project-link .project-name) {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  :deep(.project-item > .outermost) {
+    margin-top: 3px;
+    margin-bottom: 8px;
+  }
+
+  .project-item + .project-item {
+    position: relative;
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  .project-item + .project-item::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  :deep(.project-tree-collapse-enter-active),
+  :deep(.project-tree-collapse-leave-active) {
+    overflow: hidden;
+    transition: max-height 0.22s ease, opacity 0.18s ease;
+  }
+
+  :deep(.project-tree-collapse-enter-from),
+  :deep(.project-tree-collapse-leave-to) {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  :deep(.project-tree-collapse-enter-to),
+  :deep(.project-tree-collapse-leave-from) {
+    max-height: 1200px;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :deep(.project-tree-collapse-enter-active),
+    :deep(.project-tree-collapse-leave-active) {
+      transition: none;
+    }
+  }
+
+  .sidebar-resizer {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 30;
+    touch-action: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0);
+      transition: background-color 0.15s ease;
+    }
+  }
+
+  &:hover .sidebar-resizer::before,
+  &.resizing .sidebar-resizer::before {
+    background: rgba(255, 255, 255, 0.22);
   }
 }
 </style>
