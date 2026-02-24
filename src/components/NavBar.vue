@@ -485,7 +485,6 @@ function setNotification() {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.08);
     flex: 0 0 auto;
   }
 

@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 const emit = defineEmits(['close']);
 defineExpose({ open });
@@ -46,6 +46,24 @@ function open(anchor: MouseEvent | HTMLElement) {
 
   coords.value = { x, y };
   opened.value = true;
+
+  void nextTick(() => {
+    const menu = document.querySelector('.dropdown-backdrop .dropdown-menu') as HTMLElement | null;
+    if (!menu) {
+      coords.value = { x, y };
+      return;
+    }
+
+    const padding = 8;
+    const menuRect = menu.getBoundingClientRect();
+    const maxX = Math.max(padding, window.innerWidth - menuRect.width - padding);
+    const maxY = Math.max(padding, window.innerHeight - menuRect.height - padding);
+
+    coords.value = {
+      x: Math.min(Math.max(x, padding), maxX),
+      y: Math.min(Math.max(y, padding), maxY),
+    };
+  });
 }
 
 function close() {

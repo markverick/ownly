@@ -257,6 +257,7 @@ function linkToFile(entry: TreeEntry) {
   return {
     name: 'project-file',
     params: {
+      space: route.params.space as string,
       project: props.project.name,
       filename: splitPath.value.concat(entry.name),
     },

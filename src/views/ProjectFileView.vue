@@ -70,7 +70,12 @@
         <div
           v-if="hasPreviewResult"
           class="code-resizer"
+          tabindex="0"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize preview panel"
           @pointerdown.prevent="startSplitResize"
+          @keydown="onResizerKeydown"
         >
           <button
             class="preview-toggle"
@@ -225,7 +230,7 @@ const resultError = ref(String());
 const viewers = ref<string[]>([]);
 const visibleViewers = computed(() => viewers.value.slice(0, 5));
 const hiddenViewers = computed(() => viewers.value.slice(5));
-const hiddenViewerCount = computed(() => Math.max(0, viewers.value.length - visibleViewers.value.length));
+const hiddenViewerCount = computed(() => hiddenViewers.value.length);
 const hasPreviewResult = computed(() => contentIsLatex.value || contentIsMarkdown.value || contentIsRevealJS.value);
 
 const SPLIT_RATIO_KEY = 'ownly.preview.splitRatio';
@@ -429,6 +434,33 @@ function startSplitResize(event: PointerEvent) {
 function togglePreview() {
   previewCollapsed.value = !previewCollapsed.value;
   globalThis.localStorage?.setItem(PREVIEW_COLLAPSED_KEY, previewCollapsed.value ? '1' : '0');
+}
+
+function onResizerKeydown(event: KeyboardEvent) {
+  if (!hasPreviewResult.value) return;
+
+  const key = event.key;
+  if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
+
+  event.preventDefault();
+
+  if (previewCollapsed.value) {
+    previewCollapsed.value = false;
+    globalThis.localStorage?.setItem(PREVIEW_COLLAPSED_KEY, '0');
+  }
+
+  const step = event.shiftKey ? 0.05 : 0.02;
+  if (key === 'ArrowLeft') {
+    splitRatio.value = Math.max(MIN_SPLIT_RATIO, splitRatio.value - step);
+  } else if (key === 'ArrowRight') {
+    splitRatio.value = Math.min(MAX_SPLIT_RATIO, splitRatio.value + step);
+  } else if (key === 'Home') {
+    splitRatio.value = MIN_SPLIT_RATIO;
+  } else if (key === 'End') {
+    splitRatio.value = MAX_SPLIT_RATIO;
+  }
+
+  globalThis.localStorage?.setItem(SPLIT_RATIO_KEY, String(splitRatio.value));
 }
 
 function onSplitResize(event: PointerEvent) {
