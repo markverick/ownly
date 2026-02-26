@@ -198,20 +198,29 @@ const tree = computed<TreeEntry[]>(() => {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (!part) continue;
+      const isFolder = i !== parts.length - 1;
 
       const existing = current.find((e) => e.name === part);
       if (existing) {
-        existing.is_folder = existing.is_folder ?? i !== parts.length - 1;
-        existing.children = existing.children ?? [];
-        current = existing.children;
+        if (isFolder) {
+          existing.is_folder = true;
+          existing.children = existing.children ?? [];
+          current = existing.children;
+        }
       } else {
         const newEntry: TreeEntry = {
           name: part,
-          is_folder: i !== parts.length - 1,
-          children: [],
+          is_folder: isFolder,
         };
+
+        if (isFolder) {
+          newEntry.children = [];
+        }
+
         current.push(newEntry);
-        current = newEntry.children!;
+        if (isFolder) {
+          current = newEntry.children!;
+        }
       }
     }
   };
