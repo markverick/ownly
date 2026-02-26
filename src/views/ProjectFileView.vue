@@ -22,7 +22,13 @@
 
       <div class="file-head-right">
         <div class="viewer-list" v-if="viewers.length">
-          <div v-for="viewer in visibleViewers" :key="viewer" class="viewer-badge" tabindex="0">
+          <div
+            v-for="viewer in visibleViewers"
+            :key="viewer"
+            class="viewer-badge"
+            tabindex="0"
+            :aria-label="`Viewing ${viewer}`"
+          >
             <img
               class="viewer-avatar"
               :src="utils.makeAvatar(viewer)"
@@ -33,7 +39,12 @@
               <div class="viewer-tooltip-name">{{ viewer }}</div>
             </div>
           </div>
-          <div v-if="hiddenViewerCount > 0" class="viewer-more" tabindex="0">
+          <div
+            v-if="hiddenViewerCount > 0"
+            class="viewer-more"
+            tabindex="0"
+            :aria-label="`Also viewing: ${hiddenViewers.join(', ')}`"
+          >
             +{{ hiddenViewerCount }}
             <div class="viewer-tooltip" role="tooltip">
               <div class="viewer-tooltip-title">Also viewing</div>
@@ -472,6 +483,7 @@ function onSplitResize(event: PointerEvent) {
 function stopSplitResize() {
   if (!isResizingSplit.value) {
     window.removeEventListener('pointermove', onSplitResize);
+    window.removeEventListener('pointerup', stopSplitResize);
     return;
   }
 
@@ -479,6 +491,7 @@ function stopSplitResize() {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
   window.removeEventListener('pointermove', onSplitResize);
+  window.removeEventListener('pointerup', stopSplitResize);
   globalThis.localStorage?.setItem(SPLIT_RATIO_KEY, String(splitRatio.value));
 }
 

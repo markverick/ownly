@@ -305,6 +305,7 @@ function onSidebarResize(event: PointerEvent) {
 function stopSidebarResize() {
   if (!isResizing.value) {
     window.removeEventListener('pointermove', onSidebarResize);
+    window.removeEventListener('pointerup', stopSidebarResize);
     return;
   }
 
@@ -312,6 +313,7 @@ function stopSidebarResize() {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
   window.removeEventListener('pointermove', onSidebarResize);
+  window.removeEventListener('pointerup', stopSidebarResize);
   globalThis.localStorage?.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth.value));
 }
 
