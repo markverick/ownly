@@ -858,13 +858,6 @@ watch(awareness, (newAwareness, oldAwareness) => {
     .code-resizer {
       display: none;
     }
-
-    &.has-result {
-      .editor,
-      > .result {
-        width: 50%;
-      }
-    }
   }
 
 }

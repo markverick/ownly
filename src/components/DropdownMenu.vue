@@ -2,7 +2,7 @@
   <Teleport to="body" v-if="opened">
     <div class="dropdown-backdrop" @click.stop.prevent="close" @contextmenu.stop.prevent="close">
       <div class="dropdown is-active" :style="{ top: `${coords.y}px`, left: `${coords.x}px` }">
-        <div class="dropdown-menu" role="menu">
+        <div ref="menuRef" class="dropdown-menu" role="menu">
           <div class="dropdown-content">
             <slot></slot>
           </div>
@@ -20,6 +20,7 @@ defineExpose({ open });
 
 const coords = ref({ x: 0, y: 0 });
 const opened = ref(false);
+const menuRef = ref<HTMLElement | null>(null);
 
 function open(anchor: MouseEvent | HTMLElement) {
   let x = 200;
@@ -48,7 +49,7 @@ function open(anchor: MouseEvent | HTMLElement) {
   opened.value = true;
 
   void nextTick(() => {
-    const menu = document.querySelector('.dropdown-backdrop .dropdown-menu') as HTMLElement | null;
+    const menu = menuRef.value;
     if (!menu) {
       coords.value = { x, y };
       return;
