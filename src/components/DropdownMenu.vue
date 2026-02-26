@@ -1,7 +1,11 @@
 <template>
   <Teleport to="body" v-if="opened">
     <div class="dropdown-backdrop" @click.stop.prevent="close" @contextmenu.stop.prevent="close">
-      <div class="dropdown is-active" :style="{ top: `${coords.y}px`, left: `${coords.x}px` }">
+      <div
+        class="dropdown is-active"
+        :class="{ 'is-positioning': !positioned }"
+        :style="{ top: `${coords.y}px`, left: `${coords.x}px` }"
+      >
         <div ref="menuRef" class="dropdown-menu" role="menu">
           <div class="dropdown-content">
             <slot></slot>
@@ -21,6 +25,7 @@ defineExpose({ open });
 const coords = ref({ x: 0, y: 0 });
 const opened = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
+const positioned = ref(false);
 
 function open(anchor: MouseEvent | HTMLElement) {
   let x = 200;
@@ -46,12 +51,14 @@ function open(anchor: MouseEvent | HTMLElement) {
   }
 
   coords.value = { x, y };
+  positioned.value = false;
   opened.value = true;
 
   void nextTick(() => {
     const menu = menuRef.value;
     if (!menu) {
       coords.value = { x, y };
+      positioned.value = true;
       return;
     }
 
@@ -64,11 +71,13 @@ function open(anchor: MouseEvent | HTMLElement) {
       x: Math.min(Math.max(x, padding), maxX),
       y: Math.min(Math.max(y, padding), maxY),
     };
+    positioned.value = true;
   });
 }
 
 function close() {
   opened.value = false;
+  positioned.value = false;
   emit('close');
 }
 </script>
@@ -84,6 +93,10 @@ function close() {
 
   .dropdown {
     z-index: calc(var(--z-dropdown) + 1);
+
+    &.is-positioning {
+      visibility: hidden;
+    }
   }
 
   .dropdown-content {

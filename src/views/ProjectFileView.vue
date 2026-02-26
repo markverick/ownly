@@ -21,6 +21,17 @@
       </div>
 
       <div class="file-head-right">
+        <button
+          v-if="hasPreviewResult"
+          class="button is-small is-light mobile-preview-toggle"
+          type="button"
+          :title="mobileActivePane === 'preview' ? 'Switch to code' : 'Switch to preview'"
+          :aria-pressed="mobileActivePane === 'preview'"
+          @click="toggleMobilePane"
+        >
+          {{ mobileActivePane === 'preview' ? 'Code' : 'Preview' }}
+        </button>
+
         <div class="viewer-list" v-if="viewers.length">
           <div
             v-for="viewer in visibleViewers"
@@ -69,6 +80,7 @@
           'has-result': hasPreviewResult,
           'is-resizing': isResizingSplit,
           'preview-collapsed': previewCollapsed,
+          'mobile-preview-active': mobileActivePane === 'preview',
         }"
         :style="codeSplitStyle"
       >
@@ -246,10 +258,12 @@ const hasPreviewResult = computed(() => contentIsLatex.value || contentIsMarkdow
 
 const SPLIT_RATIO_KEY = 'ownly.preview.splitRatio';
 const PREVIEW_COLLAPSED_KEY = 'ownly.preview.collapsed';
+const MOBILE_ACTIVE_PANE_KEY = 'ownly.preview.mobilePane';
 const MIN_SPLIT_RATIO = 0.28;
 const MAX_SPLIT_RATIO = 0.72;
 const splitRatio = ref(0.5);
 const previewCollapsed = ref(false);
+const mobileActivePane = ref<'code' | 'preview'>('code');
 const isResizingSplit = ref(false);
 const splitLeft = ref(0);
 const splitWidth = ref(0);
@@ -266,7 +280,7 @@ const codeSplitStyle = computed(() => ({
 const localViewerName = ref('');
 const isRenaming = ref(false);
 const renameValue = ref('');
-const renameInput = ref<HTMLInputElement | null>(null);
+const renameInput = useTemplateRef<HTMLInputElement>('renameInput');
 
 let awarenessListener: ((event: { added: number[]; updated: number[]; removed: number[] }, source: 'local' | 'remote') => void) | null = null;
 onMounted(create);
@@ -284,6 +298,9 @@ if (Number.isFinite(savedSplit)) {
 }
 
 previewCollapsed.value = globalThis.localStorage?.getItem(PREVIEW_COLLAPSED_KEY) === '1';
+mobileActivePane.value = globalThis.localStorage?.getItem(MOBILE_ACTIVE_PANE_KEY) === 'preview'
+  ? 'preview'
+  : 'code';
 
 async function create() {
   // If something fails, we should destroy these
@@ -445,6 +462,11 @@ function startSplitResize(event: PointerEvent) {
 function togglePreview() {
   previewCollapsed.value = !previewCollapsed.value;
   globalThis.localStorage?.setItem(PREVIEW_COLLAPSED_KEY, previewCollapsed.value ? '1' : '0');
+}
+
+function toggleMobilePane() {
+  mobileActivePane.value = mobileActivePane.value === 'preview' ? 'code' : 'preview';
+  globalThis.localStorage?.setItem(MOBILE_ACTIVE_PANE_KEY, mobileActivePane.value);
 }
 
 function onResizerKeydown(event: KeyboardEvent) {
@@ -854,11 +876,40 @@ watch(awareness, (newAwareness, oldAwareness) => {
 
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1023px) {
     .code-resizer {
       display: none;
     }
+
+    &.has-result {
+      > .editor,
+      > .result {
+        width: 100%;
+      }
+
+      > .result {
+        display: none;
+      }
+
+      &.mobile-preview-active > .editor {
+        display: none;
+      }
+
+      &.mobile-preview-active > .result {
+        display: block;
+      }
+    }
   }
 
+}
+
+.mobile-preview-toggle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-preview-toggle {
+    display: inline-flex;
+  }
 }
 </style>
