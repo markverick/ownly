@@ -64,7 +64,7 @@
             </router-link>
 
             <ProjectTree
-              v-if="activeProjectName == proj.uuid"
+              v-if="activeProjectName === proj.uuid"
               class="outermost"
               ref="projectTree"
               :project="proj"

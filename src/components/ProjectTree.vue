@@ -20,6 +20,8 @@
           type="button"
           class="tree-disclosure"
           :aria-label="isFolderOpen(entry) ? 'Collapse folder' : 'Expand folder'"
+          :aria-expanded="isFolderOpen(entry)"
+          :aria-controls="getFolderControlsId(entry)"
           @click.stop="toggleFolder(entry)"
         >
           <FontAwesomeIcon
@@ -76,6 +78,7 @@
       <ProjectTree
         ref="subtrees"
         v-if="isFolderOpen(entry)"
+        :id="getFolderControlsId(entry)"
         :project="props.project"
         :files="[]"
         :rtree="entry.children ?? []"
@@ -285,6 +288,10 @@ function isFileActive(entry: TreeEntry) {
 /** Get the project path to an entry */
 function getEntryPath(entry: TreeEntry) {
   return `${props.path}${entry.name}${entry.is_folder ? '/' : ''}`;
+}
+
+function getFolderControlsId(entry: TreeEntry) {
+  return `project-tree-${encodeURIComponent(getEntryPath(entry))}`;
 }
 
 /** Choose an icon for a given entry */

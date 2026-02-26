@@ -683,23 +683,23 @@ watch(awareness, (newAwareness, oldAwareness) => {
 }
 
 .viewer-avatar {
+  display: block;
   width: 24px;
   height: 24px;
   border-radius: 999px;
   border: 2px solid var(--bulma-scheme-main);
-  margin-left: -6px;
   background: var(--bulma-scheme-main);
-
-  &:first-child {
-    margin-left: 0;
-  }
 }
 
 .viewer-badge {
   position: relative;
+  width: 24px;
+  height: 24px;
   margin-left: -6px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 999px;
 
   &:first-child {
     margin-left: 0;
@@ -715,6 +715,7 @@ watch(awareness, (newAwareness, oldAwareness) => {
 
 .viewer-more {
   position: relative;
+  flex: 0 0 24px;
   width: 24px;
   height: 24px;
   border-radius: 999px;
