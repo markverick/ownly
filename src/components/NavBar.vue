@@ -40,7 +40,7 @@
 
       <template v-if="routeIsWorkspace">
         <p class="menu-label">Projects</p>
-        <ul class="menu-list">
+        <ul class="menu-list project-list">
           <li v-for="proj in projects" :key="proj.uuid" class="project-item">
             <router-link :to="linkProject(proj)" class="project-link">
               <div class="link-inner project-link-inner">
@@ -63,17 +63,17 @@
               />
             </router-link>
 
-            <Transition name="project-tree-collapse">
-              <ProjectTree
-                v-if="activeProjectName == proj.uuid"
-                class="outermost"
-                ref="projectTree"
-                :project="proj"
-                :files="projectFiles"
-              />
-            </Transition>
+            <ProjectTree
+              v-if="activeProjectName === proj.uuid"
+              class="outermost"
+              ref="projectTree"
+              :project="proj"
+              :files="projectFiles"
+            />
           </li>
+        </ul>
 
+        <ul class="menu-list project-actions">
           <li>
             <a @click="showProjectModal = true">
               <FontAwesomeIcon class="mr-1" :icon="faPlus" size="sm" />
@@ -305,6 +305,7 @@ function onSidebarResize(event: PointerEvent) {
 function stopSidebarResize() {
   if (!isResizing.value) {
     window.removeEventListener('pointermove', onSidebarResize);
+    window.removeEventListener('pointerup', stopSidebarResize);
     return;
   }
 
@@ -312,6 +313,7 @@ function stopSidebarResize() {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
   window.removeEventListener('pointermove', onSidebarResize);
+  window.removeEventListener('pointerup', stopSidebarResize);
   globalThis.localStorage?.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth.value));
 }
 
@@ -485,7 +487,6 @@ function setNotification() {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.08);
     flex: 0 0 auto;
   }
 
@@ -497,6 +498,10 @@ function setNotification() {
   :deep(.project-item > .outermost) {
     margin-top: 3px;
     margin-bottom: 8px;
+  }
+
+  :deep(.project-list .project-item:last-child > .outermost) {
+    margin-bottom: 0;
   }
 
   .project-item + .project-item {
@@ -515,29 +520,8 @@ function setNotification() {
     background: rgba(255, 255, 255, 0.08);
   }
 
-  :deep(.project-tree-collapse-enter-active),
-  :deep(.project-tree-collapse-leave-active) {
-    overflow: hidden;
-    transition: max-height 0.22s ease, opacity 0.18s ease;
-  }
-
-  :deep(.project-tree-collapse-enter-from),
-  :deep(.project-tree-collapse-leave-to) {
-    max-height: 0;
-    opacity: 0;
-  }
-
-  :deep(.project-tree-collapse-enter-to),
-  :deep(.project-tree-collapse-leave-from) {
-    max-height: 1200px;
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :deep(.project-tree-collapse-enter-active),
-    :deep(.project-tree-collapse-leave-active) {
-      transition: none;
-    }
+  .project-actions {
+    margin-top: 6px;
   }
 
   .sidebar-resizer {

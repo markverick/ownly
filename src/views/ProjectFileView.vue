@@ -21,8 +21,25 @@
       </div>
 
       <div class="file-head-right">
+        <button
+          v-if="hasPreviewResult"
+          class="button is-small is-light mobile-preview-toggle"
+          type="button"
+          :title="mobileActivePane === 'preview' ? 'Switch to code' : 'Switch to preview'"
+          :aria-pressed="mobileActivePane === 'preview'"
+          @click="toggleMobilePane"
+        >
+          {{ mobileActivePane === 'preview' ? 'Code' : 'Preview' }}
+        </button>
+
         <div class="viewer-list" v-if="viewers.length">
-          <div v-for="viewer in visibleViewers" :key="viewer" class="viewer-badge" tabindex="0">
+          <div
+            v-for="viewer in visibleViewers"
+            :key="viewer"
+            class="viewer-badge"
+            tabindex="0"
+            :aria-label="`Viewing ${viewer}`"
+          >
             <img
               class="viewer-avatar"
               :src="utils.makeAvatar(viewer)"
@@ -33,7 +50,12 @@
               <div class="viewer-tooltip-name">{{ viewer }}</div>
             </div>
           </div>
-          <div v-if="hiddenViewerCount > 0" class="viewer-more" tabindex="0">
+          <div
+            v-if="hiddenViewerCount > 0"
+            class="viewer-more"
+            tabindex="0"
+            :aria-label="`Also viewing: ${hiddenViewers.join(', ')}`"
+          >
             +{{ hiddenViewerCount }}
             <div class="viewer-tooltip" role="tooltip">
               <div class="viewer-tooltip-title">Also viewing</div>
@@ -58,6 +80,7 @@
           'has-result': hasPreviewResult,
           'is-resizing': isResizingSplit,
           'preview-collapsed': previewCollapsed,
+          'mobile-preview-active': mobileActivePane === 'preview',
         }"
         :style="codeSplitStyle"
       >
@@ -70,7 +93,12 @@
         <div
           v-if="hasPreviewResult"
           class="code-resizer"
+          tabindex="0"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize preview panel"
           @pointerdown.prevent="startSplitResize"
+          @keydown="onResizerKeydown"
         >
           <button
             class="preview-toggle"
@@ -225,15 +253,17 @@ const resultError = ref(String());
 const viewers = ref<string[]>([]);
 const visibleViewers = computed(() => viewers.value.slice(0, 5));
 const hiddenViewers = computed(() => viewers.value.slice(5));
-const hiddenViewerCount = computed(() => Math.max(0, viewers.value.length - visibleViewers.value.length));
+const hiddenViewerCount = computed(() => hiddenViewers.value.length);
 const hasPreviewResult = computed(() => contentIsLatex.value || contentIsMarkdown.value || contentIsRevealJS.value);
 
 const SPLIT_RATIO_KEY = 'ownly.preview.splitRatio';
 const PREVIEW_COLLAPSED_KEY = 'ownly.preview.collapsed';
+const MOBILE_ACTIVE_PANE_KEY = 'ownly.preview.mobilePane';
 const MIN_SPLIT_RATIO = 0.28;
 const MAX_SPLIT_RATIO = 0.72;
 const splitRatio = ref(0.5);
 const previewCollapsed = ref(false);
+const mobileActivePane = ref<'code' | 'preview'>('code');
 const isResizingSplit = ref(false);
 const splitLeft = ref(0);
 const splitWidth = ref(0);
@@ -250,7 +280,7 @@ const codeSplitStyle = computed(() => ({
 const localViewerName = ref('');
 const isRenaming = ref(false);
 const renameValue = ref('');
-const renameInput = ref<HTMLInputElement | null>(null);
+const renameInput = useTemplateRef<HTMLInputElement>('renameInput');
 
 let awarenessListener: ((event: { added: number[]; updated: number[]; removed: number[] }, source: 'local' | 'remote') => void) | null = null;
 onMounted(create);
@@ -268,6 +298,9 @@ if (Number.isFinite(savedSplit)) {
 }
 
 previewCollapsed.value = globalThis.localStorage?.getItem(PREVIEW_COLLAPSED_KEY) === '1';
+mobileActivePane.value = globalThis.localStorage?.getItem(MOBILE_ACTIVE_PANE_KEY) === 'preview'
+  ? 'preview'
+  : 'code';
 
 async function create() {
   // If something fails, we should destroy these
@@ -431,6 +464,38 @@ function togglePreview() {
   globalThis.localStorage?.setItem(PREVIEW_COLLAPSED_KEY, previewCollapsed.value ? '1' : '0');
 }
 
+function toggleMobilePane() {
+  mobileActivePane.value = mobileActivePane.value === 'preview' ? 'code' : 'preview';
+  globalThis.localStorage?.setItem(MOBILE_ACTIVE_PANE_KEY, mobileActivePane.value);
+}
+
+function onResizerKeydown(event: KeyboardEvent) {
+  if (!hasPreviewResult.value) return;
+
+  const key = event.key;
+  if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
+
+  event.preventDefault();
+
+  if (previewCollapsed.value) {
+    previewCollapsed.value = false;
+    globalThis.localStorage?.setItem(PREVIEW_COLLAPSED_KEY, '0');
+  }
+
+  const step = event.shiftKey ? 0.05 : 0.02;
+  if (key === 'ArrowLeft') {
+    splitRatio.value = Math.max(MIN_SPLIT_RATIO, splitRatio.value - step);
+  } else if (key === 'ArrowRight') {
+    splitRatio.value = Math.min(MAX_SPLIT_RATIO, splitRatio.value + step);
+  } else if (key === 'Home') {
+    splitRatio.value = MIN_SPLIT_RATIO;
+  } else if (key === 'End') {
+    splitRatio.value = MAX_SPLIT_RATIO;
+  }
+
+  globalThis.localStorage?.setItem(SPLIT_RATIO_KEY, String(splitRatio.value));
+}
+
 function onSplitResize(event: PointerEvent) {
   if (!isResizingSplit.value || splitWidth.value <= 0) return;
   const ratio = (event.clientX - splitLeft.value) / splitWidth.value;
@@ -440,6 +505,7 @@ function onSplitResize(event: PointerEvent) {
 function stopSplitResize() {
   if (!isResizingSplit.value) {
     window.removeEventListener('pointermove', onSplitResize);
+    window.removeEventListener('pointerup', stopSplitResize);
     return;
   }
 
@@ -447,6 +513,7 @@ function stopSplitResize() {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
   window.removeEventListener('pointermove', onSplitResize);
+  window.removeEventListener('pointerup', stopSplitResize);
   globalThis.localStorage?.setItem(SPLIT_RATIO_KEY, String(splitRatio.value));
 }
 
@@ -616,23 +683,23 @@ watch(awareness, (newAwareness, oldAwareness) => {
 }
 
 .viewer-avatar {
+  display: block;
   width: 24px;
   height: 24px;
   border-radius: 999px;
   border: 2px solid var(--bulma-scheme-main);
-  margin-left: -6px;
   background: var(--bulma-scheme-main);
-
-  &:first-child {
-    margin-left: 0;
-  }
 }
 
 .viewer-badge {
   position: relative;
+  width: 24px;
+  height: 24px;
   margin-left: -6px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 999px;
 
   &:first-child {
     margin-left: 0;
@@ -648,6 +715,7 @@ watch(awareness, (newAwareness, oldAwareness) => {
 
 .viewer-more {
   position: relative;
+  flex: 0 0 24px;
   width: 24px;
   height: 24px;
   border-radius: 999px;
@@ -809,18 +877,40 @@ watch(awareness, (newAwareness, oldAwareness) => {
 
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1023px) {
     .code-resizer {
       display: none;
     }
 
     &.has-result {
-      .editor,
+      > .editor,
       > .result {
-        width: 50%;
+        width: 100%;
+      }
+
+      > .result {
+        display: none;
+      }
+
+      &.mobile-preview-active > .editor {
+        display: none;
+      }
+
+      &.mobile-preview-active > .result {
+        display: block;
       }
     }
   }
 
+}
+
+.mobile-preview-toggle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-preview-toggle {
+    display: inline-flex;
+  }
 }
 </style>

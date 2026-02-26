@@ -3,7 +3,7 @@
     ref="button"
     class="button"
     @click.stop.prevent="openFromButton"
-    title="Update contents of this node"
+    title="Open actions menu"
   >
     <FontAwesomeIcon :icon="faEllipsisVertical" size="xs" />
 

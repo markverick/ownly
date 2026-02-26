@@ -20,6 +20,8 @@
           type="button"
           class="tree-disclosure"
           :aria-label="isFolderOpen(entry) ? 'Collapse folder' : 'Expand folder'"
+          :aria-expanded="isFolderOpen(entry)"
+          :aria-controls="getFolderControlsId(entry)"
           @click.stop="toggleFolder(entry)"
         >
           <FontAwesomeIcon
@@ -76,6 +78,7 @@
       <ProjectTree
         ref="subtrees"
         v-if="isFolderOpen(entry)"
+        :id="getFolderControlsId(entry)"
         :project="props.project"
         :files="[]"
         :rtree="entry.children ?? []"
@@ -198,20 +201,29 @@ const tree = computed<TreeEntry[]>(() => {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       if (!part) continue;
+      const isFolder = i !== parts.length - 1;
 
       const existing = current.find((e) => e.name === part);
       if (existing) {
-        existing.is_folder = existing.is_folder ?? i !== parts.length - 1;
-        existing.children = existing.children ?? [];
-        current = existing.children;
+        if (isFolder) {
+          existing.is_folder = true;
+          existing.children = existing.children ?? [];
+          current = existing.children;
+        }
       } else {
         const newEntry: TreeEntry = {
           name: part,
-          is_folder: i !== parts.length - 1,
-          children: [],
+          is_folder: isFolder,
         };
+
+        if (isFolder) {
+          newEntry.children = [];
+        }
+
         current.push(newEntry);
-        current = newEntry.children!;
+        if (isFolder) {
+          current = newEntry.children!;
+        }
       }
     }
   };
@@ -257,6 +269,7 @@ function linkToFile(entry: TreeEntry) {
   return {
     name: 'project-file',
     params: {
+      space: route.params.space as string,
       project: props.project.name,
       filename: splitPath.value.concat(entry.name),
     },
@@ -275,6 +288,10 @@ function isFileActive(entry: TreeEntry) {
 /** Get the project path to an entry */
 function getEntryPath(entry: TreeEntry) {
   return `${props.path}${entry.name}${entry.is_folder ? '/' : ''}`;
+}
+
+function getFolderControlsId(entry: TreeEntry) {
+  return `project-tree-${encodeURIComponent(getEntryPath(entry))}`;
 }
 
 /** Choose an icon for a given entry */
