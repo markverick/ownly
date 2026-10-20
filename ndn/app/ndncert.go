@@ -5,6 +5,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"crypto/elliptic"
@@ -17,6 +18,11 @@ import (
 )
 
 func (a *App) NdncertEmail(email string, CodeCb func(status string) string) (err error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return fmt.Errorf("email address is empty")
+	}
+
 	// Connect to the testbed
 	if err := a.WaitForConnectivity(time.Second * 5); err != nil {
 		return err

@@ -3,20 +3,20 @@
 // ========================================================
 
 // Name of workspace
-#owner: "ndn"/owner10
-#owner: "ndn"/owner20/owner21
-#owner: "ndn"/owner30/owner31/owner32
-#owner: "ndn"/owner40/owner41/owner42/owner43
-#owner: "ndn"/owner50/owner51/owner52/owner53/owner54
-#owner: "ndn"/owner60/owner61/owner62/owner63/owner64/owner65
+#owner: "ndnd"/_
+#owner: "ndnd"/_/_
+#owner: "ndnd"/_/_/_
+#owner: "ndnd"/_/_/_/_
+#owner: "ndnd"/_/_/_/_/_
+#owner: "ndnd"/_/_/_/_/_/_
 
 // Name of user
-#user: "ndn"/user10
-#user: "ndn"/user20/user21
-#user: "ndn"/user30/user31/user32
-#user: "ndn"/user40/user41/user42/user43
-#user: "ndn"/user50/user51/user52/user53/user54
-#user: "ndn"/user60/user61/user62/user63/user64/user65
+#user: "ndnd"/_
+#user: "ndnd"/_/_
+#user: "ndnd"/_/_/_
+#user: "ndnd"/_/_/_/_
+#user: "ndnd"/_/_/_/_/_
+#user: "ndnd"/_/_/_/_/_/_
 
 // Only owner can sign all user certificates
 // The delegation will happen using a separate CrossSchema
@@ -25,8 +25,8 @@
 #owner_id_cert: #owner/#KEY <= #testbed_site_cert | #testbed_root_cert
 
 // Testbed trust model
-#testbed_site_cert: /"ndn"/_/_/#KEY <= #testbed_root_cert
-#testbed_root_cert: /"ndn"/#KEY
+#testbed_site_cert: /"ndnd"/_/#KEY <= #testbed_root_cert
+#testbed_root_cert: /"ndnd"/#KEY
 
 // Project sync group
 #proj: #owner/wksp/proj

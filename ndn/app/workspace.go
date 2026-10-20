@@ -37,7 +37,7 @@ const SnapshotThreshold = 100
 var repoName, _ = enc.NameFromStr("/ndnd/ucla/repo")
 
 // TODO: this is testbed configuration
-var multicastPrefix, _ = enc.NameFromStr("/ndn/multicast")
+var multicastPrefix, _ = enc.NameFromStr("/ndnd/multicast")
 
 //go:embed schema.tlv
 var SchemaBytes []byte
@@ -86,7 +86,7 @@ func (a *App) JoinWorkspace(wkspStr_ string, create bool) (wkspStr string, err e
 			Append(enc.NewKeywordComponent("INVITE")).
 			Append(idName...)
 
-		// accessRequestPrefix, _ := enc.NameFromStr("/ndn/multicast" + wkspStr) // Uncomment if you want to use multicast
+		// accessRequestPrefix, _ := enc.NameFromStr("/ndnd/multicast" + wkspStr) // Uncomment if you want to use multicast
 		accessRequestPrefix, _ := enc.NameFromStr(wkspStr)
 
 		// Name to request access from workspace initiator
@@ -275,7 +275,7 @@ func (a *App) GetWorkspace(groupStr string, ignoreValidity bool) (api js.Value, 
 		return
 	}
 	if isOwner {
-		// prefix, _ := enc.NameFromStr("/ndn/multicast" + groupStr) // Uncomment if you want to use multicast
+		// prefix, _ := enc.NameFromStr("/ndnd/multicast" + groupStr) // Uncomment if you want to use multicast
 		prefix, _ := enc.NameFromStr(groupStr)
 		accessRequestPrefix := prefix.
 			Append(enc.NewGenericComponent("root")).
