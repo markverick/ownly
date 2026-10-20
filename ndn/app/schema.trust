@@ -3,20 +3,20 @@
 // ========================================================
 
 // Name of workspace
-#owner: "ndnd"/_
-#owner: "ndnd"/_/_
-#owner: "ndnd"/_/_/_
-#owner: "ndnd"/_/_/_/_
-#owner: "ndnd"/_/_/_/_/_
-#owner: "ndnd"/_/_/_/_/_/_
+#owner: "ndnd"/owner10
+#owner: "ndnd"/owner20/owner21
+#owner: "ndnd"/owner30/owner31/owner32
+#owner: "ndnd"/owner40/owner41/owner42/owner43
+#owner: "ndnd"/owner50/owner51/owner52/owner53/owner54
+#owner: "ndnd"/owner60/owner61/owner62/owner63/owner64/owner65
 
 // Name of user
-#user: "ndnd"/_
-#user: "ndnd"/_/_
-#user: "ndnd"/_/_/_
-#user: "ndnd"/_/_/_/_
-#user: "ndnd"/_/_/_/_/_
-#user: "ndnd"/_/_/_/_/_/_
+#user: "ndnd"/user10
+#user: "ndnd"/user20/user21
+#user: "ndnd"/user30/user31/user32
+#user: "ndnd"/user40/user41/user42/user43
+#user: "ndnd"/user50/user51/user52/user53/user54
+#user: "ndnd"/user60/user61/user62/user63/user64/user65
 
 // Only owner can sign all user certificates
 // The delegation will happen using a separate CrossSchema

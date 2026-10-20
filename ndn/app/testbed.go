@@ -5,9 +5,7 @@ package app
 import (
 	"context"
 	_ "embed"
-	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
 	enc "github.com/named-data/ndnd/std/encoding"
@@ -23,16 +21,8 @@ import (
 	"github.com/named-data/ndnd/std/utils"
 )
 
-//go:embed testbed.root.ndnd.cert.b64
-var testbedRootCertB64 string
-
-var testbedRootCert = func() []byte {
-	cert, err := base64.StdEncoding.DecodeString(strings.Join(strings.Fields(testbedRootCertB64), ""))
-	if err != nil {
-		panic(err)
-	}
-	return cert
-}()
+//go:embed testbed.root.ndnd.cert
+var testbedRootCert []byte
 
 // TODO: better way to configure/change this as needed
 var testbedRootName, _ = enc.NameFromStr("/ndnd/KEY/%84%AD%5C%E7%03%02%B9%E9/NA/v=1792488582746")
