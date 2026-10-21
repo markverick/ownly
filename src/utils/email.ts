@@ -15,7 +15,7 @@ export function convertEmailToName(email: string): string {
   if (!validateEmail(email)) {
     throw new Error('Invalid email address');
   }
-  return '/ndn/' + encodeURIComponent(email.toLowerCase());
+  return '/ndnd/' + encodeURIComponent(email.toLowerCase());
 }
 
 export function convertEmailToNameLegacy(email: string): string {
@@ -28,7 +28,7 @@ export function convertEmailToNameLegacy(email: string): string {
 export function convertDomainToName(domain: string): string {
   // Mirrors the Go-side NDNCERT DNS challenge: the issued testbed cert's
   // identity name is the testbed CA prefix with the verified domain
-  // appended as a single component. For the default `/ndn` testbed the
-  // resulting identity is `/ndn/<domain>`.
-  return '/ndn/' + domain.toLowerCase();
+  // appended as a single component. For the default `/ndnd` testbed the
+  // resulting identity is `/ndnd/<domain>`.
+  return '/ndnd/' + domain.toLowerCase();
 }

@@ -520,7 +520,7 @@ function domainSubmit() {
 
   // When joining via fast-join, the DNS domain chosen MUST produce the
   // identity the inviter designated. The DNS challenge's identity name is
-  // `/ndn/<domain>` for the default testbed, mirroring the Go-side
+  // `/ndnd/<domain>` for the default testbed, mirroring the Go-side
   // caPrefix.Append(domain) call in ndncert_dns.
   if (fastJoinBundle.value) {
     const predicted = utils.convertDomainToName(formatted);

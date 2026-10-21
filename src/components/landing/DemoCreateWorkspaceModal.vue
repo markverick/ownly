@@ -20,7 +20,7 @@
 
     <div>
       Your workspace will have the network name &ndash;<br />
-      <code>/ndn/username/marketing-team</code>
+      <code>/ndnd/username/marketing-team</code>
     </div>
 
     <div class="field mt-2 has-text-right">

@@ -23,20 +23,20 @@
 #ANSI: "KEY"/_/"anchor"
 
 // Name of workspace
-#owner: "ndn"/owner10
-#owner: "ndn"/owner20/owner21
-#owner: "ndn"/owner30/owner31/owner32
-#owner: "ndn"/owner40/owner41/owner42/owner43
-#owner: "ndn"/owner50/owner51/owner52/owner53/owner54
-#owner: "ndn"/owner60/owner61/owner62/owner63/owner64/owner65
+#owner: "ndnd"/owner10
+#owner: "ndnd"/owner20/owner21
+#owner: "ndnd"/owner30/owner31/owner32
+#owner: "ndnd"/owner40/owner41/owner42/owner43
+#owner: "ndnd"/owner50/owner51/owner52/owner53/owner54
+#owner: "ndnd"/owner60/owner61/owner62/owner63/owner64/owner65
 
 // User identity patterns, shared by workspace and testbed policies.
-#user1: "ndn"/user10
-#user2: "ndn"/user20/user21
-#user3: "ndn"/user30/user31/user32
-#user4: "ndn"/user40/user41/user42/user43
-#user5: "ndn"/user50/user51/user52/user53/user54
-#user6: "ndn"/user60/user61/user62/user63/user64/user65
+#user1: "ndnd"/user10
+#user2: "ndnd"/user20/user21
+#user3: "ndnd"/user30/user31/user32
+#user4: "ndnd"/user40/user41/user42/user43
+#user5: "ndnd"/user50/user51/user52/user53/user54
+#user6: "ndnd"/user60/user61/user62/user63/user64/user65
 
 // All supported user identity lengths.
 #user: #user1
@@ -47,16 +47,16 @@
 #user: #user6
 
 // Name of directed request requester
-#requester: "ndn"/requester10
-#requester: "ndn"/requester20/requester21
-#requester: "ndn"/requester30/requester31/requester32
-#requester: "ndn"/requester40/requester41/requester42/requester43
-#requester: "ndn"/requester50/requester51/requester52/requester53/requester54
-#requester: "ndn"/requester60/requester61/requester62/requester63/requester64/requester65
+#requester: "ndnd"/requester10
+#requester: "ndnd"/requester20/requester21
+#requester: "ndnd"/requester30/requester31/requester32
+#requester: "ndnd"/requester40/requester41/requester42/requester43
+#requester: "ndnd"/requester50/requester51/requester52/requester53/requester54
+#requester: "ndnd"/requester60/requester61/requester62/requester63/requester64/requester65
 
 // Testbed trust model
-#testbed_site_cert: /"ndn"/_/_/#KEY <= #testbed_root_cert
-#testbed_root_cert: /"ndn"/#KEY
+#testbed_site_cert: /"ndnd"/_/#KEY <= #testbed_root_cert
+#testbed_root_cert: /"ndnd"/#KEY
 #testbed_owner_cert: #owner/#TC <= #testbed_site_cert | #testbed_root_cert
 #testbed_user_cert: #user/#TC <= #testbed_site_cert | #testbed_root_cert
 
@@ -132,15 +132,15 @@
 #repo_request: #user5/#repo_operation <= #testbed_user_cert5
 #repo_request: #user6/#repo_operation <= #testbed_user_cert6
 
-// Network services use UCLA site-issued NA certificates. Responses must
+// Network services use UCLA site-issued certificates. Responses must
 // be signed by the service named in the packet.
-#merkle_cert: "KEY"/_/"NA"/_
-#merkle_cert: "KEY"/_/"NA"
-#merkle_log_site_cert: "ndn"/"edu"/"ucla"/#merkle_cert <= #testbed_root_cert
-#testbed_service_cert: "ndn"/"edu"/"ucla"/"ndnd"/service/#merkle_cert
+#merkle_cert: "KEY"/_/"site"/_
+#merkle_cert: "KEY"/_/"site"
+#merkle_log_site_cert: "ndnd"/"ucla"/#KEY <= #testbed_root_cert
+#testbed_service_cert: "ndnd"/"ucla"/service/#merkle_cert
     & { service: "merkle" | "repo" } <= #merkle_log_site_cert
-#testbed_service_response: "ndn"/"edu"/"ucla"/"ndnd"/service/operation/_
+#testbed_service_response: "ndnd"/"ucla"/service/operation/_
     & { service: "merkle", operation: "32=check" | "32=append" }
     | { service: "repo", operation: "32=cmd" }
     <= #testbed_service_cert
-#merkle_append_request: "ndn"/"edu"/"ucla"/"ndnd"/"merkle"/"32=append"/#user/_ <= #testbed_user_cert
+#merkle_append_request: "ndnd"/"ucla"/"merkle"/"32=append"/#user/_ <= #testbed_user_cert

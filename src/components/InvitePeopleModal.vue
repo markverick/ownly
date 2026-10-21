@@ -50,7 +50,7 @@
 
       <div class="field has-addons mt-2">
         <div class="control is-expanded">
-          <input class="input" type="text" :placeholder="`name@example.com or /ndn/user-name`" v-model="inviteInput"
+          <input class="input" type="text" :placeholder="`name@example.com or /ndnd/user-name`" v-model="inviteInput"
             @keydown.enter.prevent="addInvitees(inviteInput)" @paste="addInviteesOnPaste" autofocus />
         </div>
         <div class="control">

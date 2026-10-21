@@ -26,8 +26,8 @@ import (
 var testbedRootCert []byte
 
 // TODO: better way to configure/change this as needed
-var testbedRootName, _ = enc.NameFromStr("/ndn/KEY/%27%C4%B2%2A%9F%7B%81%27/ndn/v=1651246789556")
-var testbedPrefix = enc.Name{enc.NewGenericComponent("ndn")}
+var testbedRootName, _ = enc.NameFromStr("/ndnd/KEY/%84%AD%5C%E7%03%02%B9%E9/NA/v=1792488582746")
+var testbedPrefix = enc.Name{enc.NewGenericComponent("ndnd")}
 
 // GetTestbedKey returns the testbed key, or nil if not found.
 // Returns the latest valid certificate from the keychain.
@@ -90,19 +90,19 @@ func (a *App) ConnectTestbed() error {
 		return nil
 	}
 
-	// set default router to suns
-	endpoint := "wss://suns.cs.ucla.edu/ws/"
+	// Use the separate NDNd testbed's WebSocket endpoint.
+	endpoint := "wss://suns.cs.ucla.edu/ndnd/ws/"
 	// if FCH returns a router, connect to that instead
 	res, err := fch.Query(context.Background(), fch.Request{
 		"",
 		"wss",
 		1,
-		"ndn",
+		"ndnd",
 	})
 	if err != nil {
 		return err
 	}
-	if res.Routers != nil {
+	if len(res.Routers) > 0 {
 		// TODO: give the option for which testbed node to connect to, for debugging
 		endpoint = res.Routers[0].Connect
 	}

@@ -17,11 +17,11 @@ import (
 
 // The endpoint is routing configuration. Response authorization and append
 // signing are defined by schema.trust.
-var historyLogName, _ = enc.NameFromStr("/ndn/edu/ucla/ndnd/merkle")
+var historyLogName, _ = enc.NameFromStr("/ndnd/ucla/merkle")
 
 // historyLogScopeID binds durable rows to the endpoint and LVS signer policy.
 // A future signer or endpoint change must use a new ID, never retarget rows.
-const historyLogScopeID = "ucla-ndnd-merkle/site-issued-v1"
+const historyLogScopeID = "ndnd-network-ucla-merkle/site-issued-v1"
 
 // historyReader returns a client for retained workspace Data.
 func (a *App) historyReader(client ndn.Client, requester enc.Name, allowMissingHistory bool) (ndn.Client, error) {

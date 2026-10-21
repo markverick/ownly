@@ -40,10 +40,10 @@ const (
 )
 
 // TODO: change this
-var repoName, _ = enc.NameFromStr("/ndn/edu/ucla/ndnd/repo")
+var repoName, _ = enc.NameFromStr("/ndnd/ucla/repo")
 
 // TODO: this is testbed configuration
-var multicastPrefix, _ = enc.NameFromStr("/ndn/multicast")
+var multicastPrefix, _ = enc.NameFromStr("/ndnd/multicast")
 
 //go:embed schema.tlv
 var SchemaBytes []byte
